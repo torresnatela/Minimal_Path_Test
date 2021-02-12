@@ -7,6 +7,7 @@ private:
 
     int nodeValue;
     int minimalDistance;
+    int nodePath;
 
 public:
 
@@ -17,6 +18,9 @@ public:
 
     void set_minimalDistance(int);
     int get_minimalDistance();
+
+    void set_nodePath(int);
+    int get_nodePath();
 
 };
 
