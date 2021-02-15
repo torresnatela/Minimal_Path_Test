@@ -37,10 +37,48 @@ void debug_all(LISTNODE exploredList, LISTNODE priorityList)
     debug_list(&exploredList);
 }
 
-//retorna o Node com a distancia minima
-int extract_min()
+void splice_list(LISTNODE *exploredList, LISTNODE *priorityList, int nodeValue)
 {
-    return 1;
+    LISTNODE::iterator iterator;
+
+
+    //Search nodeValue in priorityList
+    for  (iterator = priorityList->begin(); iterator != priorityList->end(); iterator++)
+    {
+        if(iterator->get_nodeValue() == nodeValue)
+        {
+            exploredList->splice(exploredList->begin(), *priorityList, iterator);
+            return;
+        }
+    }
+    
+}
+
+//retorna o Node com a distancia minima e que possui uma aresta com um node na Explored List
+int extract_min(LISTNODE *priorityList)
+{
+    LISTNODE::iterator nodeIterator, nodeIteratorReturn;
+
+    nodeIterator = priorityList->begin(); nodeIteratorReturn = priorityList->begin();
+    nodeIterator++;
+
+    int nodeValue = nodeIteratorReturn->get_nodeValue();
+
+    int minimalDistance2 = nodeIteratorReturn->get_minimalDistance();
+
+    for (long unsigned int i = 1; i < priorityList->size(); i++)
+    {
+        int minimalDistance1 = nodeIterator->get_minimalDistance();
+
+        if (minimalDistance1 < minimalDistance2 && minimalDistance1 != -1)
+        {
+            nodeValue = nodeIterator->get_nodeValue();
+            minimalDistance2 = minimalDistance1;
+        }
+        nodeIterator++;
+    }
+    return nodeValue;
+    
 }
 
 //Atualiza as distancias mínimas dos vertices do grafico.
@@ -48,7 +86,7 @@ void update_minimal_distances(LISTNODE *priorityQueue, LISTNODE *exploredNodes, 
 {       
         LISTNODE::iterator listIterator;
 
-        listIterator = exploredNodes->end();
+        listIterator = exploredNodes->begin();
         int nodeValueAux = listIterator->get_nodeValue();
         int DistanceSearchNode = listIterator->get_minimalDistance();
 
@@ -80,18 +118,18 @@ int main(){
     LISTNODE priorityQueue;
     LISTNODE exploredNodes;
 
-    int numberOfNodes, numberOfEdges;
+    long unsigned int numberOfNodes, numberOfEdges;
     std::cin >> numberOfNodes >> numberOfEdges;
 
     //Array that represents de graph's edges
     int **edgesArray = new int*[numberOfNodes]; 
-    for (int i = 0; i < numberOfNodes; i++) //Dynamic alocation
+    for (long unsigned int i = 0; i < numberOfNodes; i++) //Dynamic alocation
     {
         edgesArray[i] = new int[numberOfNodes];
     }
 
     //Edge array construction
-    for (int i = 0; i < numberOfEdges; i++)
+    for (long unsigned int i = 0; i < numberOfEdges; i++)
     {
         int nodeOne, nodeTwo; //Edge e[nodeOne, nodeTwo]
         int edgeValue;
@@ -103,7 +141,7 @@ int main(){
     }
      
     //Priority Queue construction
-    for (int i = 0; i < numberOfNodes; i++)
+    for (long unsigned int i = 0; i < numberOfNodes; i++)
     {   
         Node *auxNode = new Node();
         auxNode->set_nodeValue(i);
@@ -135,12 +173,15 @@ int main(){
     
     while (exploredNodes.size() != numberOfNodes)
     {   
-
         
         /*--- First Step || Update the minimalDistance ---*/
         update_minimal_distances(&priorityQueue, &exploredNodes, edgesArray);
 
-        /* --- Second Step || Build the Priority List */
+        /*--- Second Step || Build the Priority List ---*/
+        int minimalNodeValue = extract_min(&priorityQueue);
+
+        /*--- Third Step || Send node to Explored List ---*/
+        splice_list(&exploredNodes, &priorityQueue, minimalNodeValue);
     }
-    
+    debug_all(exploredNodes, priorityQueue);
 }
